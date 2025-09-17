@@ -16,7 +16,6 @@ export function SignalsTab() {
   const handleGetSignal = async () => {
   setLoading(true);
   try {
-    // POST на сервер для создания сигнала
     const response = await fetch('https://traiding-bot-jyp4.onrender.com/api/signals', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -25,21 +24,19 @@ export function SignalsTab() {
 
     if (!response.ok) throw new Error('Ошибка при создании сигнала');
 
-    // Получаем новый сигнал от сервера
-    const newSignal = await response.json();
+    let newSignal = await response.json();
+    // Преобразуем openTime в Date
+    newSignal = { ...newSignal, openTime: new Date(newSignal.openTime) };
 
-    // GET для получения всех активных сигналов с уже рассчитанными TP/SL
-    const activeRes = await fetch('https://traiding-bot-jyp4.onrender.com/api/signals/active');
-    if (!activeRes.ok) throw new Error('Ошибка при получении активных сигналов');
-    const activeSignalsData = await activeRes.json();
+    setActiveSignals(prev => [...prev, newSignal]); // добавляем только что созданный сигнал
 
-    setActiveSignals(activeSignalsData); // обновляем стейт
   } catch (err: any) {
     console.error(err.message);
   } finally {
     setLoading(false);
   }
 };
+
 
 
   return (
