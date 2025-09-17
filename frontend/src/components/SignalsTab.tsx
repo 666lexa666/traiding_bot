@@ -16,14 +16,11 @@ export function SignalsTab() {
   const handleGetSignal = async () => {
   try {
     // POST на сервер для создания сигнала
-    const response = await fetch('https://traiding-bot-jyp4.onrender.com/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        pair: settings.pair,
-        timeframe: settings.timeframe,
-      })
-    });
+    const response = await fetch('https://traiding-bot-jyp4.onrender.com/signals', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ pair: settings.pair, timeframe: settings.timeframe })
+});
 
     if (!response.ok) throw new Error('Ошибка при создании сигнала');
 
