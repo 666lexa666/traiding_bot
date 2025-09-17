@@ -14,13 +14,14 @@ export function SignalsTab() {
   const [loading, setLoading] = useState(false);
 
   const handleGetSignal = async () => {
+  setLoading(true);
   try {
     // POST на сервер для создания сигнала
     const response = await fetch('https://traiding-bot-jyp4.onrender.com/api/signals', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ pair: settings.pair, timeframe: settings.timeframe })
-});
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pair: settings.pair, timeframe: settings.timeframe })
+    });
 
     if (!response.ok) throw new Error('Ошибка при создании сигнала');
 
@@ -30,13 +31,16 @@ export function SignalsTab() {
     // GET для получения всех активных сигналов с уже рассчитанными TP/SL
     const activeRes = await fetch('https://traiding-bot-jyp4.onrender.com/api/signals/active');
     if (!activeRes.ok) throw new Error('Ошибка при получении активных сигналов');
-    const activeSignals = await activeRes.json();
+    const activeSignalsData = await activeRes.json();
 
-    setSignals(activeSignals); // обновляем стейт сигналов на фронте
+    setActiveSignals(activeSignalsData); // обновляем стейт
   } catch (err: any) {
     console.error(err.message);
+  } finally {
+    setLoading(false);
   }
 };
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
