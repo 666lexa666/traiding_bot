@@ -22,7 +22,7 @@ async function fetchBybitCandles(symbol, interval, limit = 500) {
   // /v2/public/kline/list?symbol=BTCUSDT&interval=15&limit=200
   // symbol must be like "BTCUSDT" (no slash)
   try {
-    const apiUrl = `https://api.bybit.com/v5/market/kline?category=linear&symbol=BTCUSDT&interval=5&limit=200`;
+    const apiUrl = `https://api.binance.com/api/v3/klines`;
     const res = await axios.get(apiUrl, {
       params: {
         symbol: symbol.replace("/", ""), // BTC/USDT -> BTCUSDT
