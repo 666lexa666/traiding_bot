@@ -28,7 +28,7 @@ export function SignalsTab() {
     const newSignal = await response.json();
 
     // GET для получения всех активных сигналов с уже рассчитанными TP/SL
-    const activeRes = await fetch('https://traiding-bot-jyp4.onrender.com/api/active');
+    const activeRes = await fetch('https://traiding-bot-jyp4.onrender.com/api/signals/active');
     if (!activeRes.ok) throw new Error('Ошибка при получении активных сигналов');
     const activeSignals = await activeRes.json();
 
