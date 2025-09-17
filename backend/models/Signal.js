@@ -7,7 +7,7 @@ const SignalSchema = new mongoose.Schema({
   takeProfit: { type: Number, required: true },
   stopLoss: { type: Number, required: true },
   status: { type: String, default: "active" }, // active / success / failed
-  createdAt: { type: Date, default: Date.now }
+  openTime: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model("Signal", SignalSchema);
