@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Activity, History, Bot } from 'lucide-react';
 import { SignalsTab } from './components/SignalsTab';
-import { HistoryTab } from './components/HistoryTab';
 
 function App() {
   const [activeTab, setActiveTab] = useState<'signals' | 'history'>('signals');
