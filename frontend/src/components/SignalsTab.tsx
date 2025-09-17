@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { TrendingUp } from 'lucide-react';
-import { ChatMessage } from './ChatMessage';
 import { SignalCard } from './SignalCard';
-import { mockChatMessages, mockActiveSignals, CURRENCY_PAIRS, TIMEFRAMES } from '../data/mockData';
-import { TradeSettings } from '../types/trading';
+import { CURRENCY_PAIRS, TIMEFRAMES } from '../data/mockData';
+import { TradeSettings, Signal } from '../types/trading';
 
 export function SignalsTab() {
   const [settings, setSettings] = useState<TradeSettings>({
@@ -11,10 +10,36 @@ export function SignalsTab() {
     timeframe: '1h'
   });
   const [autoSearch, setAutoSearch] = useState(false);
+  const [activeSignals, setActiveSignals] = useState<Signal[]>([]); // состояние для сигналов
+  const [loading, setLoading] = useState(false);
 
-  const handleGetSignal = () => {
-    const pairText = autoSearch ? 'лучшие пары' : settings.pair;
-    console.log(`Анализирую ${pairText} на таймфрейме ${settings.timeframe}... Готовлю сигнал на основе технического анализа.`);
+  const handleGetSignal = async () => {
+    setLoading(true);
+    const payload = {
+      pair: autoSearch ? null : settings.pair,
+      timeframe: settings.timeframe,
+      autoSearch
+    };
+
+    try {
+      const response = await fetch('https://traiding-bot-jyp4.onrender.com/signals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка при получении сигнала');
+      }
+
+      const newSignal: Signal = await response.json();
+      setActiveSignals(prev => [newSignal, ...prev]); // добавляем новый сигнал сверху
+    } catch (err) {
+      console.error(err);
+      alert('Не удалось получить сигнал. Проверьте сервер.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -22,21 +47,19 @@ export function SignalsTab() {
       {/* Active Signals */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          Активные сделки ({mockActiveSignals.length})
+          Активные сделки ({activeSignals.length})
         </h2>
-        
         <div className="space-y-4 max-h-96 overflow-y-auto">
-          {mockActiveSignals.map(signal => (
+          {activeSignals.map(signal => (
             <SignalCard key={signal.id} signal={signal} />
           ))}
         </div>
       </div>
 
-      {/* Trading Settings Only */}
+      {/* Trading Settings */}
       <div>
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Настройки сделки</h2>
-          
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <input
@@ -50,11 +73,9 @@ export function SignalsTab() {
                 Авто поиск лучших пар
               </label>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Валютная пара
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Валютная пара</label>
               <select
                 value={settings.pair}
                 onChange={(e) => setSettings(prev => ({ ...prev, pair: e.target.value }))}
@@ -67,17 +88,11 @@ export function SignalsTab() {
                   <option key={pair} value={pair}>{pair}</option>
                 ))}
               </select>
-              {autoSearch && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Бот автоматически выберет лучшие валютные пары для анализа
-                </p>
-              )}
+              {autoSearch && <p className="text-xs text-gray-500 mt-1">Бот автоматически выберет лучшие валютные пары для анализа</p>}
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Таймфрейм
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Таймфрейм</label>
               <select
                 value={settings.timeframe}
                 onChange={(e) => setSettings(prev => ({ ...prev, timeframe: e.target.value }))}
@@ -88,13 +103,14 @@ export function SignalsTab() {
                 ))}
               </select>
             </div>
-            
+
             <button
               onClick={handleGetSignal}
+              disabled={loading}
               className="w-full px-4 py-2 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg hover:from-green-600 hover:to-blue-600 transition-all duration-200 flex items-center justify-center gap-2"
             >
               <TrendingUp className="w-5 h-5" />
-              Дать сигнал
+              {loading ? 'Загружается...' : 'Дать сигнал'}
             </button>
           </div>
         </div>
