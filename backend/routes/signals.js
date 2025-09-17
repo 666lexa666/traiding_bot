@@ -3,14 +3,40 @@ const router = express.Router();
 const Signal = require("../models/Signal");
 const History = require("../models/History");
 
+// Вспомогательная функция для расчёта TP и SL
+function calculateTakeProfitStopLoss(openPrice) {
+  // Простейший пример: TP +2%, SL -1.5%
+  const takeProfit = parseFloat((openPrice * 1.02).toFixed(2));
+  const stopLoss = parseFloat((openPrice * 0.985).toFixed(2));
+  return { takeProfit, stopLoss };
+}
+
 // Создать новый сигнал
 router.post("/", async (req, res) => {
   try {
-    const { pair, timeframe, openPrice, takeProfit, stopLoss } = req.body;
+    const { pair, timeframe } = req.body;
 
-    const signal = new Signal({ pair, timeframe, openPrice, takeProfit, stopLoss });
+    if (!pair || !timeframe) {
+      return res.status(400).json({ error: "Необходимо указать валютную пару и таймфрейм" });
+    }
+
+    // Здесь можно запросить текущую цену через API биржи или бота
+    // Для примера возьмем фиктивную цену
+    const openPrice = 100; // TODO: заменить на реальную цену с биржи
+
+    const { takeProfit, stopLoss } = calculateTakeProfitStopLoss(openPrice);
+
+    const signal = new Signal({
+      pair,
+      timeframe,
+      openPrice,
+      takeProfit,
+      stopLoss,
+      status: "active",
+      openTime: new Date()
+    });
+
     await signal.save();
-
     res.json(signal);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -41,7 +67,8 @@ router.post("/close/:id", async (req, res) => {
       takeProfit: signal.takeProfit,
       stopLoss: signal.stopLoss,
       status,
-      profitPercent
+      profitPercent,
+      closedAt: new Date()
     });
 
     await history.save();

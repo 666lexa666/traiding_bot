@@ -14,33 +14,32 @@ export function SignalsTab() {
   const [loading, setLoading] = useState(false);
 
   const handleGetSignal = async () => {
-    setLoading(true);
-    const payload = {
-      pair: autoSearch ? null : settings.pair,
-      timeframe: settings.timeframe,
-      autoSearch
-    };
+  try {
+    // POST на сервер для создания сигнала
+    const response = await fetch('https://traiding-bot-jyp4.onrender.com/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pair: settings.pair,
+        timeframe: settings.timeframe,
+      })
+    });
 
-    try {
-      const response = await fetch('https://traiding-bot-jyp4.onrender.com/signals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+    if (!response.ok) throw new Error('Ошибка при создании сигнала');
 
-      if (!response.ok) {
-        throw new Error('Ошибка при получении сигнала');
-      }
+    // Получаем новый сигнал от сервера
+    const newSignal = await response.json();
 
-      const newSignal: Signal = await response.json();
-      setActiveSignals(prev => [newSignal, ...prev]); // добавляем новый сигнал сверху
-    } catch (err) {
-      console.error(err);
-      alert('Не удалось получить сигнал. Проверьте сервер.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // GET для получения всех активных сигналов с уже рассчитанными TP/SL
+    const activeRes = await fetch('https://traiding-bot-jyp4.onrender.com/active');
+    if (!activeRes.ok) throw new Error('Ошибка при получении активных сигналов');
+    const activeSignals = await activeRes.json();
+
+    setSignals(activeSignals); // обновляем стейт сигналов на фронте
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
