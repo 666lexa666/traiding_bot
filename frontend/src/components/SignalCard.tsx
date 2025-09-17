@@ -9,7 +9,10 @@ interface SignalCardProps {
 
 export function SignalCard({ signal }: SignalCardProps) {
   const isActive = signal.status === 'active';
-  
+
+  // Преобразуем openTime в объект Date
+  const openTime = new Date(signal.openTime);
+
   const getBorderColor = () => {
     if (signal.status === 'success') return 'border-green-500';
     if (signal.status === 'failed') return 'border-red-500';
@@ -67,17 +70,14 @@ export function SignalCard({ signal }: SignalCardProps) {
         <div className="flex items-center gap-1 text-gray-500">
           <Clock className="w-4 h-4" />
           <span className="text-sm">
-            {signal.openTime.toLocaleTimeString('ru-RU', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            })}
+            {openTime.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
       </div>
 
       {isActive && (
         <div className="mb-3">
-          <TradeTimer openTime={signal.openTime} timeframe={signal.timeframe} />
+          <TradeTimer openTime={openTime} timeframe={signal.timeframe} />
         </div>
       )}
 
